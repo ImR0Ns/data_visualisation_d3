@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 project #1</title>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+
+    <style>
+        .color_bars {
+            fill: blue;
+        }
+        .color_bars:hover {
+            fill: lightblue;
+        }
+    </style>
+
+</head>
+<body>
+    
+
+    <script>
+
+        //set d3
+        var w = 1000, h  = 500;
+        var padding = 50;
+        var svg = d3.select('body')
+                    .append('svg')
+                    .attr('width', w)
+                    .attr('height', h)
+        
+        //title
+        svg.append('text')
+            .attr('x', w / 2)
+            .attr('y', 50)
+            .text('United States GDP')
+
+
+        fetch('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json')
+        .then((result)=>result.json())
+        .then((data)=>{
+
+            var the_data = data['data']
+
+            //get vals
+            var get_max = d3.max(data['data'])
+            var get_mix = d3.min(data['data'])
+
+            //for x
+            var max_x = Number(get_max[0].split('-')[0])
+            var min_x = Number(get_mix[0].split('-')[0])
+
+            //for y
+            var max_y = get_max[1]
+            var min_y = get_mix[1]
+
+
+            var xScale = d3.scaleLinear()
+                            .domain([min_x, max_x])
+                            .range([padding, w-padding])
+
+            var yScale = d3.scaleLinear()
+                            .domain([min_y, max_y])
+                            .range([h-padding, padding])
+
+
+            //the_chars
+            for(var i in the_data){
+                var get_year = Number(the_data[i][0].split('-')[0])
+                the_data[i][0] = get_year
+            }
+
+            svg.selectAll('rect')
+                .data(the_data)
+                .enter()
+                .append('rect')
+                .attr("x", (d) =>  xScale(d[0]))
+                .attr('y', (d)=> yScale(d[1]))
+                .attr("width", 10)
+                .attr('height', d => yScale(min_y) - yScale(d[1]))
+                .attr('class', 'color_bars')
+                .append('title')
+                .text((d)=>d)
+                
+
+            //axis
+            const xAxis = d3.axisBottom(xScale);
+            const yAxis = d3.axisLeft(yScale);
+
+            //display axis
+            svg.append("g")
+            .attr("transform", "translate(0," + (h - padding) + ")")
+            .call(xAxis);
+
+            svg.append('g')
+            .attr('transform', 'translate(' + padding + ', 0)')
+            .call(yAxis)
+
+
+
+
+        })
+
+
+    </script>
+
+    <p>More Information: <a href="http://www.bea.gov/national/pdf/nipaguid.pdf"> click here!</a></p>
+
+</body>
+</html>

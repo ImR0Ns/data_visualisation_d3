@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 project #2</title>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <style>
+        .to_svg {
+            display: block;
+            margin: auto;
+        }
+        .alegg p{
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+    
+    <h1 style="text-align: center;">Doping in Professional Bicycle Racing</h1>
+    <p style="text-align: center;">35 Fastest times up Alpe d'Huez</p>
+    <div class="alegg">
+        <p style="color:#FF7F0E">No doping allegations <div class="color1"></div></p>
+        <p style="color: blue">Riders with doping allegations <div class="color2"></div></p>
+    </div>
+
+    <script>
+
+        var w = 700, h = 700
+        var padding = 50;
+
+        var svg = d3.select('body')
+                    .append('svg')
+                    .attr('width', w)
+                    .attr('height', h)
+                    .attr('class', 'to_svg')
+
+        fetch('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json')
+        .then((result)=> result.json())
+        .then((data)=> {
+            
+            var the_data = data;
+            var all_years = [], all_times = []
+        
+            //get times and years
+            for(var i in data){
+                var for_times = data[i].Time.split(':')
+                all_times.push(parseFloat(for_times[0] + '.' + for_times[1]))
+                all_years.push(data[i].Year)
+            }
+
+
+            var xScale = d3.scaleLinear()
+                        .domain([d3.min(all_years), d3.max(all_years)])
+                        .range([padding, w-padding])
+
+            var yScale = d3.scaleLinear()
+                            .domain([d3.max(all_times), d3.min(all_times)])
+                            .range([h-padding, padding])
+
+
+            //the circles
+
+            svg.selectAll('circle')
+                .data(the_data)
+                .enter()
+                .append('circle')
+                .attr('cx', (d)=> xScale(d.Year))
+                .attr('cy', (d)=>{
+                    var to_mod = d.Time.split(':')
+                    var get_nr = parseFloat(to_mod[0] + '.' + to_mod[1])
+                    return yScale(get_nr);
+                })
+                .attr('r', 6)
+                .attr('fill', (d)=> {
+                    if(d.Doping == '') {
+                        return '#FF7F0E'
+                    } else {
+                        return 'blue'
+                    }
+                })
+                .append('title')
+                .text((d)=> {
+                    var get_name = d.Name
+                    var get_nat = d.Nationality
+                    var get_year = d.Year
+                    var get_time = d.Time
+
+                    return get_name + ': ' + get_nat + '\n' +'Year: ' +  get_year + ',Time: ' + get_time
+                })
+
+            //create axis
+
+            var xAxis = d3.axisBottom(xScale)
+            var yAxis = d3.axisLeft(yScale)
+
+            svg.append("g")
+            .attr("transform", "translate(0," + (h - padding) + ")")
+            .call(xAxis);
+
+            svg.append('g')
+            .attr('transform', 'translate(' + 30 + ', 0)')
+            .call(yAxis)
+
+
+        })
+
+    </script>
+
+</body>
+</html>
